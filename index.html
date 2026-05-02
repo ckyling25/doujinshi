@@ -1,380 +1,1123 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
+<!doctype html>
+<html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>臺漫創作者生存模擬器</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>原創同人誌開拓多元敘事　獨立出版如何完整臺漫生態？</title>
+  <style>
+    :root {
+      --ink: #17120f;
+      --paper: #fff8ea;
+      --paper-2: #fff0c8;
+      --panel: #fffdf5;
+      --red: #e84f3d;
+      --blue: #2477b8;
+      --green: #2f9c74;
+      --yellow: #f3c84b;
+      --pink: #f09bb4;
+      --shadow: 7px 7px 0 var(--ink);
+      --radius: 6px;
+    }
 
-        body {
-            font-family: 'Noto Sans TC', sans-serif;
-            /* 漫畫網點背景 */
-            background-color: #f4f4f0;
-            background-image: radial-gradient(#d1d1c7 2px, transparent 2px);
-            background-size: 16px 16px;
-            color: #1a1a1a;
-            overflow-x: hidden;
-        }
+    * { box-sizing: border-box; }
 
-        /* 漫畫分鏡格風格 */
-        .comic-panel {
-            background-color: white;
-            border: 4px solid #1a1a1a;
-            border-radius: 8px;
-            box-shadow: 8px 8px 0px #1a1a1a;
-            transition: transform 0.2s, box-shadow 0.2s;
-            position: relative;
-        }
+    html { scroll-behavior: smooth; }
 
-        .comic-panel:hover.interactive {
-            transform: translate(-2px, -2px);
-            box-shadow: 10px 10px 0px #1a1a1a;
-            cursor: pointer;
-        }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
+      line-height: 1.75;
+      background:
+        radial-gradient(circle at 12px 12px, rgba(23,18,15,.13) 1.4px, transparent 1.6px) 0 0 / 24px 24px,
+        linear-gradient(110deg, #ffe7ab 0%, #fff8ea 44%, #dff4f2 100%);
+    }
 
-        .comic-panel:active.interactive {
-            transform: translate(4px, 4px);
-            box-shadow: 2px 2px 0px #1a1a1a;
-        }
+    button, input {
+      font: inherit;
+    }
 
-        /* 漫畫對話框 */
-        .speech-bubble {
-            position: relative;
-            background: white;
-            border: 4px solid #1a1a1a;
-            border-radius: 20px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            box-shadow: 4px 4px 0px #1a1a1a;
-        }
+    .site {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+    }
 
-        .speech-bubble::after {
-            content: '';
-            position: absolute;
-            bottom: -20px;
-            left: 50px;
-            border-width: 20px 20px 0 0;
-            border-style: solid;
-            border-color: #1a1a1a transparent transparent transparent;
-        }
+    .hero {
+      min-height: 92vh;
+      display: grid;
+      align-items: end;
+      padding: 28px 0 48px;
+      position: relative;
+    }
 
-        .speech-bubble::before {
-            content: '';
-            position: absolute;
-            bottom: -13px;
-            left: 53px;
-            border-width: 15px 15px 0 0;
-            border-style: solid;
-            border-color: white transparent transparent transparent;
-            z-index: 1;
-        }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 24px;
+      align-items: end;
+    }
 
-        /* 集中線特效 */
-        .action-lines {
-            background: repeating-conic-gradient(
-                from 0deg,
-                transparent 0deg 15deg,
-                rgba(0, 0, 0, 0.05) 15deg 30deg
-            );
-        }
+    .masthead {
+      border: 4px solid var(--ink);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      padding: clamp(22px, 4vw, 46px);
+      transform: rotate(-1deg);
+      position: relative;
+    }
 
-        /* 標題字體特效 */
-        .comic-title {
-            text-shadow: 3px 3px 0px #fff, 6px 6px 0px #1a1a1a;
-            font-weight: 900;
-            letter-spacing: 2px;
-        }
+    .kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 3px solid var(--ink);
+      background: var(--yellow);
+      padding: 5px 10px;
+      font-weight: 900;
+      letter-spacing: 0;
+      box-shadow: 4px 4px 0 var(--ink);
+    }
 
-        .hidden-screen {
-            display: none;
-        }
+    h1, h2, h3 {
+      line-height: 1.2;
+      letter-spacing: 0;
+      margin: 0;
+    }
 
-        .fade-in {
-            animation: fadeIn 0.5s ease-in forwards;
-        }
+    h1 {
+      font-size: clamp(2rem, 5.7vw, 5rem);
+      margin-top: 22px;
+      max-width: 9.6em;
+    }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-    </style>
+    .subtitle {
+      font-size: clamp(1rem, 1.8vw, 1.2rem);
+      margin: 22px 0 0;
+      max-width: 39em;
+    }
+
+    .byline {
+      margin-top: 22px;
+      font-weight: 800;
+      border-top: 3px solid var(--ink);
+      padding-top: 12px;
+    }
+
+    .cover-comic {
+      min-height: 530px;
+      display: grid;
+      gap: 16px;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1.08fr .92fr;
+    }
+
+    .cover-panel {
+      border: 4px solid var(--ink);
+      background: var(--panel);
+      box-shadow: 6px 6px 0 var(--ink);
+      position: relative;
+      overflow: hidden;
+      padding: 18px;
+    }
+
+    .cover-panel:nth-child(1) {
+      grid-column: span 2;
+      background:
+        radial-gradient(circle at 70% 35%, rgba(255,255,255,.9) 0 16%, transparent 17%),
+        radial-gradient(circle at 64% 42%, var(--yellow) 0 3px, transparent 4px),
+        repeating-radial-gradient(circle at 64% 42%, rgba(232,79,61,.22) 0 7px, transparent 8px 17px),
+        #fbceb5;
+    }
+
+    .cover-panel:nth-child(2) { background: #dff4f2; }
+    .cover-panel:nth-child(3) { background: #ffe1ed; }
+
+    .burst {
+      position: absolute;
+      right: 24px;
+      top: 28px;
+      width: 190px;
+      aspect-ratio: 1;
+      background: var(--yellow);
+      border: 4px solid var(--ink);
+      clip-path: polygon(50% 0,58% 28%,85% 12%,72% 39%,100% 50%,72% 61%,85% 88%,58% 72%,50% 100%,42% 72%,15% 88%,28% 61%,0 50%,28% 39%,15% 12%,42% 28%);
+      display: grid;
+      place-items: center;
+      text-align: center;
+      font-weight: 1000;
+      font-size: 1.35rem;
+      transform: rotate(9deg);
+    }
+
+    .artist {
+      position: absolute;
+      left: 30px;
+      bottom: 20px;
+      width: 170px;
+      height: 220px;
+    }
+
+    .head, .body, .hair, .arm, .book, .table {
+      position: absolute;
+      border: 4px solid var(--ink);
+    }
+
+    .head {
+      width: 84px;
+      height: 84px;
+      border-radius: 50%;
+      left: 42px;
+      top: 10px;
+      background: #ffd4b4;
+      z-index: 2;
+    }
+
+    .hair {
+      width: 98px;
+      height: 52px;
+      left: 34px;
+      top: 0;
+      background: #1d1714;
+      border-radius: 42px 42px 8px 8px;
+      z-index: 3;
+    }
+
+    .body {
+      width: 112px;
+      height: 105px;
+      left: 28px;
+      top: 88px;
+      background: var(--blue);
+      border-radius: 40px 40px 8px 8px;
+    }
+
+    .arm {
+      width: 82px;
+      height: 24px;
+      top: 122px;
+      background: #ffd4b4;
+      transform: rotate(-18deg);
+      transform-origin: left center;
+      left: 78px;
+      border-radius: 18px;
+      z-index: 4;
+    }
+
+    .book {
+      width: 112px;
+      height: 72px;
+      right: 2px;
+      bottom: 18px;
+      background: var(--paper);
+      transform: rotate(7deg);
+      z-index: 5;
+    }
+
+    .book::before {
+      content: "";
+      position: absolute;
+      inset: 10px 50% 10px 8px;
+      border-right: 3px solid var(--ink);
+      background: repeating-linear-gradient(#0000 0 9px, rgba(23,18,15,.28) 10px 12px);
+    }
+
+    .table {
+      width: 100%;
+      height: 28px;
+      left: 0;
+      bottom: 0;
+      background: var(--green);
+      border-left: 0;
+      border-right: 0;
+      border-bottom: 0;
+    }
+
+    .speech {
+      border: 4px solid var(--ink);
+      background: #fff;
+      padding: 14px 16px;
+      border-radius: 50%;
+      font-weight: 900;
+      line-height: 1.35;
+      position: relative;
+      max-width: 245px;
+    }
+
+    .speech::after {
+      content: "";
+      position: absolute;
+      width: 28px;
+      height: 28px;
+      border-right: 4px solid var(--ink);
+      border-bottom: 4px solid var(--ink);
+      background: #fff;
+      bottom: -10px;
+      left: 36px;
+      transform: rotate(37deg);
+    }
+
+    .caption {
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      bottom: 14px;
+      background: var(--ink);
+      color: #fff;
+      padding: 7px 10px;
+      font-weight: 800;
+      line-height: 1.45;
+    }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(255,248,234,.92);
+      backdrop-filter: blur(8px);
+      border-bottom: 3px solid var(--ink);
+    }
+
+    .nav-inner {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      overflow-x: auto;
+      padding: 10px 0;
+    }
+
+    .nav a, .route-btn, .choice, .reset-btn {
+      border: 3px solid var(--ink);
+      color: var(--ink);
+      background: #fff;
+      padding: 8px 12px;
+      box-shadow: 3px 3px 0 var(--ink);
+      text-decoration: none;
+      font-weight: 900;
+      border-radius: var(--radius);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: transform .16s ease, box-shadow .16s ease, background .16s ease;
+    }
+
+    .nav a:hover, .route-btn:hover, .choice:hover, .reset-btn:hover,
+    .route-btn.active {
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0 var(--ink);
+      background: var(--yellow);
+    }
+
+    main {
+      padding: 52px 0 80px;
+    }
+
+    .reader-tools {
+      border: 4px solid var(--ink);
+      box-shadow: var(--shadow);
+      background: var(--panel);
+      padding: 20px;
+      margin-bottom: 34px;
+    }
+
+    .tools-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 1000;
+      font-size: 1.2rem;
+      margin-bottom: 12px;
+    }
+
+    .routes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .route-btn[data-route="freedom"] { background: #ffe1ed; }
+    .route-btn[data-route="commerce"] { background: #dff4f2; }
+    .route-btn[data-route="stigma"] { background: #ffe7ab; }
+    .route-btn[data-route="future"] { background: #d9e8ff; }
+
+    .section {
+      margin: 42px 0;
+      scroll-margin-top: 86px;
+    }
+
+    .section-title {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .issue-no {
+      width: 58px;
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      border: 4px solid var(--ink);
+      background: var(--red);
+      color: #fff;
+      font-size: 1.55rem;
+      font-weight: 1000;
+      box-shadow: 4px 4px 0 var(--ink);
+      transform: rotate(-5deg);
+    }
+
+    .section-title h2 {
+      font-size: clamp(1.55rem, 3vw, 2.4rem);
+      background: linear-gradient(transparent 62%, var(--yellow) 63%);
+      width: fit-content;
+    }
+
+    .panel-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 16px;
+    }
+
+    .story-panel {
+      border: 4px solid var(--ink);
+      background: var(--panel);
+      box-shadow: 5px 5px 0 var(--ink);
+      padding: 20px;
+      position: relative;
+      min-height: 150px;
+      transition: transform .2s ease, background .2s ease;
+    }
+
+    .story-panel:hover {
+      transform: rotate(.4deg) translateY(-2px);
+      background: #fff;
+    }
+
+    .span-4 { grid-column: span 4; }
+    .span-5 { grid-column: span 5; }
+    .span-6 { grid-column: span 6; }
+    .span-7 { grid-column: span 7; }
+    .span-8 { grid-column: span 8; }
+    .span-12 { grid-column: span 12; }
+
+    .tag {
+      display: inline-block;
+      background: var(--ink);
+      color: #fff;
+      font-weight: 900;
+      padding: 2px 8px;
+      margin-bottom: 10px;
+      transform: rotate(-1deg);
+    }
+
+    .quote {
+      font-size: 1.15rem;
+      font-weight: 900;
+    }
+
+    .route-match {
+      outline: 6px solid var(--yellow);
+      background: #fffdf0;
+    }
+
+    .game {
+      border: 5px solid var(--ink);
+      box-shadow: 9px 9px 0 var(--ink);
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.76), rgba(255,255,255,.92)),
+        radial-gradient(circle at 8px 8px, rgba(23,18,15,.18) 1px, transparent 1.5px) 0 0 / 15px 15px,
+        #ffdce7;
+      padding: clamp(18px, 3vw, 30px);
+      margin: 24px 0 38px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .game::before {
+      content: "PLAY";
+      position: absolute;
+      right: -16px;
+      top: 8px;
+      font-size: clamp(3rem, 9vw, 7rem);
+      font-weight: 1000;
+      color: rgba(23,18,15,.08);
+      transform: rotate(12deg);
+      pointer-events: none;
+    }
+
+    .game-head {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 20px;
+      align-items: start;
+      position: relative;
+    }
+
+    .game h3 {
+      font-size: clamp(1.35rem, 2.7vw, 2.25rem);
+      margin-bottom: 8px;
+    }
+
+    .score-board {
+      display: grid;
+      gap: 8px;
+      min-width: 260px;
+    }
+
+    .meter {
+      border: 3px solid var(--ink);
+      background: #fff;
+      height: 25px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .meter span {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 0;
+      background: var(--green);
+      transition: width .28s ease;
+    }
+
+    .meter.commerce span { background: var(--blue); }
+    .meter.risk span { background: var(--red); }
+
+    .meter-label {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: .9rem;
+      font-weight: 900;
+    }
+
+    .scene {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 18px;
+      align-items: stretch;
+      margin-top: 20px;
+    }
+
+    .avatar-panel {
+      border: 4px solid var(--ink);
+      background: #fff8ea;
+      min-height: 220px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .avatar-panel .artist {
+      transform: scale(.86);
+      left: 14px;
+      bottom: 10px;
+    }
+
+    .question-card {
+      border: 4px solid var(--ink);
+      background: #fff;
+      padding: 18px;
+      min-height: 220px;
+      position: relative;
+    }
+
+    .question-card::before {
+      content: "";
+      position: absolute;
+      left: -16px;
+      top: 48px;
+      width: 28px;
+      height: 28px;
+      background: #fff;
+      border-left: 4px solid var(--ink);
+      border-bottom: 4px solid var(--ink);
+      transform: rotate(45deg);
+    }
+
+    .step {
+      display: inline-block;
+      font-weight: 1000;
+      color: #fff;
+      background: var(--red);
+      padding: 2px 9px;
+      margin-bottom: 10px;
+    }
+
+    .question {
+      font-size: 1.2rem;
+      font-weight: 1000;
+      margin-bottom: 14px;
+    }
+
+    .choices {
+      display: grid;
+      gap: 10px;
+    }
+
+    .choice {
+      text-align: left;
+      white-space: normal;
+      background: #fff8ea;
+    }
+
+    .choice strong {
+      display: block;
+      font-size: 1.05rem;
+    }
+
+    .choice small {
+      display: block;
+      font-weight: 700;
+      opacity: .82;
+      margin-top: 2px;
+    }
+
+    .result {
+      display: none;
+      margin-top: 18px;
+      border: 4px solid var(--ink);
+      background: #fff;
+      box-shadow: 5px 5px 0 var(--ink);
+      padding: 20px;
+    }
+
+    .result.show { display: block; }
+
+    .result-title {
+      font-size: clamp(1.35rem, 2.8vw, 2.2rem);
+      font-weight: 1000;
+      line-height: 1.2;
+      margin-bottom: 10px;
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin: 16px 0;
+    }
+
+    .result-item {
+      border: 3px solid var(--ink);
+      background: var(--paper-2);
+      padding: 10px;
+      font-weight: 900;
+      min-height: 80px;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 16px;
+    }
+
+    .timeline-item {
+      display: grid;
+      grid-template-columns: 90px 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .time-label {
+      border: 3px solid var(--ink);
+      background: var(--yellow);
+      box-shadow: 3px 3px 0 var(--ink);
+      text-align: center;
+      font-weight: 1000;
+      padding: 6px;
+    }
+
+    .footer {
+      background: var(--ink);
+      color: #fff;
+      padding: 34px 0;
+    }
+
+    .footer p { margin: 0; }
+
+    @media (max-width: 850px) {
+      .hero {
+        min-height: auto;
+      }
+
+      .hero-grid,
+      .game-head,
+      .scene {
+        grid-template-columns: 1fr;
+      }
+
+      .cover-comic {
+        min-height: 440px;
+      }
+
+      .score-board {
+        min-width: 0;
+      }
+
+      .avatar-panel {
+        min-height: 180px;
+      }
+
+      .avatar-panel .artist {
+        transform: scale(.7);
+        transform-origin: left bottom;
+      }
+
+      .span-4, .span-5, .span-6, .span-7, .span-8 {
+        grid-column: span 12;
+      }
+
+      .result-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .timeline-item {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
+<body>
+  <header class="hero site" id="top">
+    <div class="hero-grid">
+      <div class="masthead">
+        <span class="kicker">COMIC REPORT</span>
+        <h1>原創同人誌開拓多元敘事　獨立出版如何完整臺漫生態？</h1>
+        <p class="subtitle">從同人誌的新手村，到商業出版的戰場：這是一則關於自由創作、編輯協作、經濟壓力與臺漫破圈想像的互動新聞。</p>
+        <p class="byline">記者鄭丞傑、陳筱雯、方凱琪、林婷妤報導</p>
+      </div>
 
-    <div id="game-container" class="w-full max-w-2xl mx-auto">
-        
-        <!-- ================= START SCREEN ================= -->
-        <div id="start-screen" class="comic-panel action-lines p-8 text-center fade-in">
-            <div class="mb-6 flex justify-center">
-                <!-- SVG Icon -->
-                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-600"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></svg>
-            </div>
-            <h1 class="text-4xl md:text-5xl comic-title text-indigo-600 mb-4">臺漫創作者生存模擬器</h1>
-            <p class="text-lg font-bold mb-8 bg-white inline-block px-4 py-2 border-2 border-black rounded-lg transform -rotate-2">
-                「畫到底，能當飯吃嗎？」
-            </p>
-            <p class="text-gray-700 mb-8 font-medium">
-                你是一位剛踏入社會的創作者，腦中有著滿滿的故事。<br>
-                面對現實的經濟壓力與商業市場的考驗，<br>
-                你的選擇會帶你走向商業連載，還是獨立出版的同人場？
-            </p>
-            <button onclick="startGame()" class="comic-panel interactive w-full py-4 bg-yellow-400 text-xl font-bold uppercase tracking-widest hover:bg-yellow-300">
-                開始連載！ (START)
-            </button>
+      <div class="cover-comic" aria-label="漫畫風格封面插圖">
+        <div class="cover-panel">
+          <div class="speech">我有太多的想法想去講。</div>
+          <div class="burst">自由<br>創作！</div>
+          <div class="artist" aria-hidden="true">
+            <div class="hair"></div>
+            <div class="head"></div>
+            <div class="body"></div>
+            <div class="arm"></div>
+            <div class="book"></div>
+            <div class="table"></div>
+          </div>
+          <div class="caption">創作者在九十公分寬的攤位前，直接遇見讀者。</div>
         </div>
-
-        <!-- ================= GAME SCREEN ================= -->
-        <div id="game-screen" class="hidden-screen fade-in">
-            <div class="flex justify-between items-center mb-4 font-bold border-b-4 border-black pb-2">
-                <span class="text-xl">EPISODE <span id="ep-number">1</span></span>
-                <span class="bg-black text-white px-3 py-1 rounded-full text-sm">抉擇時刻</span>
-            </div>
-
-            <!-- Dialogue / Question -->
-            <div class="speech-bubble">
-                <p id="question-text" class="text-xl font-bold leading-relaxed"></p>
-            </div>
-
-            <!-- Choices -->
-            <div id="choices-container" class="grid grid-cols-1 gap-4">
-                <!-- Buttons will be injected here via JS -->
-            </div>
+        <div class="cover-panel">
+          <strong>同人誌</strong>
+          <p>題材、形式、尺寸都能跳脫主流出版框架。</p>
+          <div class="caption">尖銳、私密、實驗性的作品，找到生存位置。</div>
         </div>
-
-        <!-- ================= RESULT SCREEN ================= -->
-        <div id="result-screen" class="hidden-screen comic-panel p-8 fade-in">
-            <h2 class="text-3xl comic-title text-red-500 mb-6 text-center">最終完結篇</h2>
-            
-            <div class="mb-8 border-4 border-black p-4 rounded-lg bg-gray-50 relative overflow-hidden">
-                <div class="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+PHBhdGggZD0iTTAgMGgyMHYyMEgwem0xMCAxMGgxMHYxMEgxMHoiIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iLjEiLz48L3N2Zz4=')]"></div>
-                <h3 class="text-xl font-bold mb-2">你的創作者屬性分析：</h3>
-                
-                <div class="mb-2 flex justify-between font-bold text-sm">
-                    <span>獨立出版 (同人)</span>
-                    <span>商業出版 (主流)</span>
-                </div>
-                <!-- Progress Bar -->
-                <div class="w-full bg-gray-300 h-6 rounded-full border-2 border-black overflow-hidden flex">
-                    <div id="indie-bar" class="bg-blue-400 h-full border-r-2 border-black flex items-center justify-center text-xs font-bold transition-all duration-1000" style="width: 50%"></div>
-                    <div id="commercial-bar" class="bg-yellow-400 h-full flex items-center justify-center text-xs font-bold transition-all duration-1000" style="width: 50%"></div>
-                </div>
-            </div>
-
-            <div class="text-center mb-8">
-                <h3 id="result-title" class="text-2xl font-bold bg-black text-white inline-block px-4 py-2 transform -skew-x-6 mb-4"></h3>
-                <p id="result-desc" class="text-lg leading-relaxed text-left"></p>
-            </div>
-
-            <div class="bg-yellow-100 border-l-8 border-yellow-500 p-4 mb-6">
-                <h4 class="font-bold flex items-center mb-2">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    編輯部給你的生存建議：
-                </h4>
-                <p id="result-advice" class="text-sm font-medium"></p>
-            </div>
-
-            <button onclick="location.reload()" class="comic-panel interactive w-full py-3 bg-white text-lg font-bold">
-                重新模擬一次 (RESTART)
-            </button>
+        <div class="cover-panel">
+          <strong>商業漫畫</strong>
+          <p>編輯、通路與行銷資源，讓作品走向更大市場。</p>
+          <div class="caption">自由與市場之間，需要重新協商。</div>
         </div>
-
+      </div>
     </div>
+  </header>
 
-    <script>
-        // Game Data & Logic
-        const storyData = [
-            {
-                text: "恭喜畢業！你決定踏上漫畫家之路。但現實是殘酷的，存款所剩無幾，你的第一步是？",
-                choices: [
-                    { 
-                        text: "燃燒熱血！辭掉工作全職投入原創同人誌創作，窮也要畫！", 
-                        indieVal: 3, commVal: 0, 
-                        icon: "🔥"
-                    },
-                    { 
-                        text: "先找份正職或接案維持生計，利用下班時間慢慢畫", 
-                        indieVal: 1, commVal: 2, 
-                        icon: "💼"
-                    }
-                ]
-            },
-            {
-                text: "終於要構思第一部作品了！你想畫什麼樣的故事？",
-                choices: [
-                    { 
-                        text: "迎合大眾口味的王道熱血戰鬥，或是校園戀愛喜劇", 
-                        indieVal: 0, commVal: 3, 
-                        icon: "⚔️"
-                    },
-                    { 
-                        text: "探討社會邊緣議題，帶點獵奇或讓人不舒服的實驗性作品", 
-                        indieVal: 3, commVal: 0, 
-                        icon: "👁️"
-                    },
-                    { 
-                        text: "單純記錄自家貓咪的日常，療癒輕鬆的小短漫", 
-                        indieVal: 2, commVal: 1, 
-                        icon: "🐈"
-                    }
-                ]
-            },
-            {
-                text: "你的作品在網路上獲得了一些關注，某天，一位商業出版社的編輯私訊你，希望能洽談連載，但要求你修改主角的設定以符合「普遍級」市場（例如：把抽菸改成吃棒棒糖）。你決定？",
-                choices: [
-                    { 
-                        text: "接受修改！這是踏入商業市場、獲得資源與行銷的大好機會！", 
-                        indieVal: -1, commVal: 4, 
-                        icon: "🤝"
-                    },
-                    { 
-                        text: "拒絕妥協！我的角色就是要在這時候抽菸才有靈魂！我選擇獨立出版。", 
-                        indieVal: 4, commVal: -1, 
-                        icon: "🚭"
-                    },
-                    { 
-                        text: "嘗試溝通：砍掉大量抽菸鏡頭，但保留最關鍵的一格以傳達美學。", 
-                        indieVal: 2, commVal: 3, 
-                        icon: "⚖️"
-                    }
-                ]
-            },
-            {
-                text: "作品即將印製成實體書，但獨立印刷成本很高，你的選擇是？",
-                choices: [
-                    { 
-                        text: "申請文化部/文策院的漫畫輔導金，賭一把全心投入創作", 
-                        indieVal: 3, commVal: 1, 
-                        icon: "📜"
-                    },
-                    { 
-                        text: "不印了，直接交給出版社，靠版稅和平台點擊率賺錢", 
-                        indieVal: 0, commVal: 3, 
-                        icon: "🏢"
-                    },
-                    { 
-                        text: "在募資平台上發起集資，直接面對讀者測試市場水溫", 
-                        indieVal: 2, commVal: 2, 
-                        icon: "💰"
-                    }
-                ]
-            },
-            {
-                text: "最後，你覺得畫漫畫對你來說，最重要的是什麼？",
-                choices: [
-                    { 
-                        text: "毫無隔閡地與讀者互動，完整傳達自己的聲音", 
-                        indieVal: 3, commVal: 0, 
-                        icon: "🗣️"
-                    },
-                    { 
-                        text: "成為現象級作品，讓作品出現在各大書店甚至被影視化", 
-                        indieVal: 0, commVal: 3, 
-                        icon: "🎬"
-                    }
-                ]
-            }
-        ];
+  <nav class="nav" aria-label="頁面導覽">
+    <div class="nav-inner">
+      <a href="#start">故事開端</a>
+      <a href="#newcomer">新手村</a>
+      <a href="#freedom">自由創作</a>
+      <a href="#commerce">跨足商漫</a>
+      <a href="#future">生態未來</a>
+    </div>
+  </nav>
 
-        let currentQuestionIndex = 0;
-        let scoreIndie = 0;
-        let scoreComm = 0;
+  <main class="site">
+    <section class="reader-tools" aria-labelledby="route-title">
+      <div class="tools-title" id="route-title">選一條閱讀路線</div>
+      <p>點選後，頁面會高亮相關分鏡。你可以先讀自由創作，也可以從商業出版的限制與資源切入。</p>
+      <div class="routes">
+        <button class="route-btn" data-route="freedom">自由與表達</button>
+        <button class="route-btn" data-route="commerce">出版與市場</button>
+        <button class="route-btn" data-route="stigma">偏見與生計</button>
+        <button class="route-btn" data-route="future">破圈與生態</button>
+      </div>
+    </section>
 
-        // Elements
-        const startScreen = document.getElementById('start-screen');
-        const gameScreen = document.getElementById('game-screen');
-        const resultScreen = document.getElementById('result-screen');
-        const epNumber = document.getElementById('ep-number');
-        const questionText = document.getElementById('question-text');
-        const choicesContainer = document.getElementById('choices-container');
+    <section class="section" id="start">
+      <div class="section-title">
+        <div class="issue-no">01</div>
+        <h2>疫情後的豪賭　原創成為敲門磚</h2>
+      </div>
+      <div class="panel-grid">
+        <article class="story-panel span-7" data-route="commerce freedom">
+          <span class="tag">卓芭子</span>
+          <p class="quote">「覺得自己第一次跟電影中的那種末日情境這麼靠近。」</p>
+          <p>原本是代課老師的卓芭子，在疫情期間面臨職涯轉變。過去他畫二創同人誌，卻因臺灣創作環境不夠完善，對踏入原創圈有所遲疑。</p>
+        </article>
+        <article class="story-panel span-5" data-route="commerce">
+          <span class="tag">轉折</span>
+          <p>疫情激發新的創作靈感，他申請文策院漫畫輔導金，辭掉教職，投入喪屍末日主題原創漫畫《即使世界末日也要閃閃發光》。</p>
+        </article>
+        <article class="story-panel span-12" data-route="commerce">
+          <span class="tag">進入體系</span>
+          <p>這部原創作品後來被 CCC 追漫台編輯看見，成為他進入商業體系的敲門磚。原創同人誌於是被放在一個關鍵位置：它既能安放個人聲音，也可能打開商業合作的門。</p>
+        </article>
+      </div>
+    </section>
 
-        function startGame() {
-            startScreen.classList.add('hidden-screen');
-            gameScreen.classList.remove('hidden-screen');
-            currentQuestionIndex = 0;
-            scoreIndie = 0;
-            scoreComm = 0;
-            renderQuestion();
-        }
+    <section class="section" id="newcomer">
+      <div class="section-title">
+        <div class="issue-no">02</div>
+        <h2>同人誌呈現多樣面貌　培育臺漫新生力量</h2>
+      </div>
+      <div class="panel-grid">
+        <article class="story-panel span-6" data-route="freedom">
+          <span class="tag">商漫與同人誌</span>
+          <p>由出版社出版、進入正式通路販售的作品，通常被歸類為商業漫畫；由創作者自行獨立出版的作品則稱作同人誌。相較於商漫，同人誌的題材與形式更為多元。</p>
+        </article>
+        <article class="story-panel span-6" data-route="freedom">
+          <span class="tag">創作分類</span>
+          <p>同人誌大致可分為「原創」與「二創」。二創以既有作品角色或世界觀為基礎；原創同人則由創作者自行建構故事與角色，並以個人名義出版。</p>
+        </article>
+        <article class="story-panel span-4" data-route="freedom future">
+          <span class="tag">新手村</span>
+          <p class="quote">「是臺漫生態鏈的一個新手村，非常重要的新手村。」</p>
+        </article>
+        <article class="story-panel span-8" data-route="freedom future">
+          <span class="tag">多元養分</span>
+          <p>原創同人誌可以容納日常戀愛、懸疑偵探、獵奇成人、療癒語錄，也不拘泥於一般漫畫形式。這種自由，成為臺漫多樣性的養分。</p>
+        </article>
+      </div>
+    </section>
 
-        function renderQuestion() {
-            // Add slight animation
-            gameScreen.classList.remove('fade-in');
-            void gameScreen.offsetWidth; // trigger reflow
-            gameScreen.classList.add('fade-in');
+    <section class="section" id="freedom">
+      <div class="section-title">
+        <div class="issue-no">03</div>
+        <h2>創作跳脫主流框架　自由特性成首要考量</h2>
+      </div>
 
-            const currentData = storyData[currentQuestionIndex];
-            epNumber.innerText = currentQuestionIndex + 1;
-            questionText.innerText = currentData.text;
-            
-            // Clear choices
-            choicesContainer.innerHTML = '';
+      <section class="game" aria-labelledby="game-title">
+        <div class="game-head">
+          <div>
+            <span class="kicker">互動模擬遊戲</span>
+            <h3 id="game-title">你的原創同人誌，適合商業出版嗎？</h3>
+            <p>你現在是一位原創同人創作者。從題材、形式、讀者互動到市場期待，每一步選擇都會改變作品的位置。結果沒有對錯，只會告訴你：這個企劃目前更靠近哪一種出版路徑。</p>
+          </div>
+          <div class="score-board" aria-label="遊戲指標">
+            <div>
+              <div class="meter-label"><span>自由表達</span><span id="freeScore">0</span></div>
+              <div class="meter freedom"><span id="freeBar"></span></div>
+            </div>
+            <div>
+              <div class="meter-label"><span>商業適配</span><span id="marketScore">0</span></div>
+              <div class="meter commerce"><span id="marketBar"></span></div>
+            </div>
+            <div>
+              <div class="meter-label"><span>出版風險</span><span id="riskScore">0</span></div>
+              <div class="meter risk"><span id="riskBar"></span></div>
+            </div>
+          </div>
+        </div>
 
-            // Render choices
-            currentData.choices.forEach((choice, index) => {
-                const btn = document.createElement('button');
-                btn.className = 'comic-panel interactive w-full text-left p-4 flex items-start bg-white hover:bg-gray-50';
-                btn.innerHTML = `
-                    <span class="text-3xl mr-4">${choice.icon}</span>
-                    <span class="text-lg font-bold">${choice.text}</span>
-                `;
-                btn.onclick = () => handleChoice(choice.indieVal, choice.commVal);
-                choicesContainer.appendChild(btn);
-            });
-        }
+        <div class="scene">
+          <div class="avatar-panel" aria-hidden="true">
+            <div class="artist">
+              <div class="hair"></div>
+              <div class="head"></div>
+              <div class="body"></div>
+              <div class="arm"></div>
+              <div class="book"></div>
+              <div class="table"></div>
+            </div>
+          </div>
+          <div class="question-card">
+            <div class="step" id="stepLabel">第 1 格</div>
+            <div class="question" id="questionText"></div>
+            <div class="choices" id="choices"></div>
+          </div>
+        </div>
 
-        function handleChoice(iVal, cVal) {
-            scoreIndie += iVal;
-            scoreComm += cVal;
+        <div class="result" id="result">
+          <div class="result-title" id="resultTitle"></div>
+          <p id="resultText"></p>
+          <div class="result-grid">
+            <div class="result-item"><span>你想創作的內容</span><br><strong id="pickedContent"></strong></div>
+            <div class="result-item"><span>主要題材與形式</span><br><strong id="pickedForm"></strong></div>
+            <div class="result-item"><span>建議出版路徑</span><br><strong id="pickedPath"></strong></div>
+          </div>
+          <p id="resultAdvice"></p>
+          <button class="reset-btn" id="resetGame">重新畫一回</button>
+        </div>
+      </section>
 
-            currentQuestionIndex++;
-            if (currentQuestionIndex < storyData.length) {
-                renderQuestion();
-            } else {
-                showResult();
-            }
-        }
+      <div class="panel-grid">
+        <article class="story-panel span-6" data-route="freedom">
+          <span class="tag">cc作務</span>
+          <p class="quote">「獨立出版很吸引我的是，他們想要把事情用漫畫講出來的那種生命力。」</p>
+          <p>他在 Mangasick 接觸到不同於主流商漫的作品，意識到畫得好不好不是唯一標準，創作者有沒有透過作品傳達自己的聲音，反而更重要。</p>
+        </article>
+        <article class="story-panel span-6" data-route="freedom commerce">
+          <span class="tag">伯爵 C's</span>
+          <p>伯爵 C's 取材日常生活，推出《Miranda and Lisa》和《JELDA》，也曾因貓角色吸引愛好者而思考 IP 化經營。但他並不急著進入商業市場，因為同人誌與商業漫畫的差別，是創作者面對的是市場還是自己。</p>
+        </article>
+        <article class="story-panel span-5" data-route="freedom">
+          <span class="tag">刺球外圍</span>
+          <p>蕭怡瑩以刺球比喻商業漫畫市場：中心是大數據決定的主流選擇，外圍的尖刺則是同人誌。被排擠掉的創意、尖銳議題，能在同人誌市場生存。</p>
+        </article>
+        <article class="story-panel span-7" data-route="freedom stigma">
+          <span class="tag">蛤仔</span>
+          <p class="quote">「我喜歡以一種看的人會覺得有點不舒服，但是繼續看又會覺得有點好笑的方式繪畫。」</p>
+          <p>這種遊走於不適與幽默之間的風格，與商業市場偏好有所落差，也讓他難以在出版體系找到對應位置。</p>
+        </article>
+      </div>
+    </section>
 
-        function showResult() {
-            gameScreen.classList.add('hidden-screen');
-            resultScreen.classList.remove('hidden-screen');
+    <section class="section" id="commerce">
+      <div class="section-title">
+        <div class="issue-no">04</div>
+        <h2>從個人跨足商漫市場　編輯成作品平衡關鍵</h2>
+      </div>
+      <div class="panel-grid">
+        <article class="story-panel span-5" data-route="commerce">
+          <span class="tag">為何跨足</span>
+          <p>創作者想進入商業領域，除了經濟來源較穩定，追求成就與知名度也是理由。媒合活動、漫畫基地交流會，以及同人場上被編輯發掘，都是可能路徑。</p>
+        </article>
+        <article class="story-panel span-7" data-route="commerce">
+          <span class="tag">編輯作為戰友</span>
+          <p>咖哩東把漫畫家與編輯的關係比喻為並肩作戰的戰友。編輯是作品的第一位觀眾，也會從故事核心、分鏡流暢度、對話用詞與畫面留白給出建議。</p>
+        </article>
+        <article class="story-panel span-6" data-route="commerce freedom">
+          <span class="tag">糖衣包裝</span>
+          <p>商業出版不必然等於放棄個人表達，但創作者需要思考如何讓題材被更多讀者接住。依萊形容，想創作什麼都可以，但要思考如何用糖衣包裝。</p>
+        </article>
+        <article class="story-panel span-6" data-route="commerce stigma">
+          <span class="tag">市場限制</span>
+          <p>Kokai 曾製作原住民傳說改編兒童漫畫，因編輯考量兒童讀者，原本抱嬰兒的分鏡被改成抱麻糬。這個荒謬又具體的例子，說明市場定位如何回頭改變畫面。</p>
+        </article>
+      </div>
+    </section>
 
-            // Calculate percentage
-            const total = Math.max(scoreIndie + scoreComm, 1); // prevent div by zero
-            // Normalize scores to avoid negative visual bars if any
-            const safeIndie = Math.max(scoreIndie, 0);
-            const safeComm = Math.max(scoreComm, 0);
-            const safeTotal = safeIndie + safeComm;
-            
-            const indiePercent = Math.round((safeIndie / safeTotal) * 100);
-            const commPercent = 100 - indiePercent;
+    <section class="section" id="stigma">
+      <div class="section-title">
+        <div class="issue-no">05</div>
+        <h2>偏見、生計與九十公分寬的讀者距離</h2>
+      </div>
+      <div class="panel-grid">
+        <article class="story-panel span-6" data-route="stigma">
+          <span class="tag">生活壓力</span>
+          <p>蛤仔直言，一邊打工會很累，很難專心畫圖。即使獲得獎勵金，許多創作者仍需接案或兼職支撐生活，這也是部分原創同人漫畫家轉向商業市場的原因。</p>
+        </article>
+        <article class="story-panel span-6" data-route="stigma">
+          <span class="tag">社會誤解</span>
+          <p>同人誌創作者常面臨外界誤解，被追問是否畫成人內容，或被視為不正式的工作。商業漫畫家被看作有專業背書，同人誌則常被歸為業餘嗜好。</p>
+        </article>
+        <article class="story-panel span-12" data-route="freedom future">
+          <span class="tag">近距離回饋</span>
+          <p class="quote">「他們跟讀者之間只隔著九十公分寬的桌子。」</p>
+          <p>同人誌的不可取代性，也在於創作者能直接聽到讀者如何理解作品。對白少、設計不直觀的書，都能在攤位前透過對話被重新打開。</p>
+        </article>
+      </div>
+    </section>
 
-            // Animate bars
-            document.getElementById('indie-bar').style.width = `${indiePercent}%`;
-            document.getElementById('indie-bar').innerText = `${indiePercent}%`;
-            document.getElementById('commercial-bar').style.width = `${commPercent}%`;
-            document.getElementById('commercial-bar').innerText = `${commPercent}%`;
+    <section class="section" id="future">
+      <div class="section-title">
+        <div class="issue-no">06</div>
+        <h2>盼消弭既定印象　臺漫亟待破圈時機</h2>
+      </div>
+      <div class="timeline">
+        <div class="timeline-item" data-route="future">
+          <div class="time-label">現在</div>
+          <article class="story-panel">
+            <span class="tag">共生共存</span>
+            <p>原創同人誌與商漫面向不同讀者，卻在臺灣漫畫產業中共生。滿滿漫畫節、IF 創集繪、台創祭 P.C.F、草率季等場域，讓更多創作者被看見。</p>
+          </article>
+        </div>
+        <div class="timeline-item" data-route="future commerce">
+          <div class="time-label">瓶頸</div>
+          <article class="story-panel">
+            <span class="tag">尚未自給自足</span>
+            <p>臺漫在商業與同人領域都累積許多創作者，但產業面仍未完全自給自足。獨立出版難以單靠同人誌養活自己，商業出版也多仰賴政府補助。</p>
+          </article>
+        </div>
+        <div class="timeline-item" data-route="future">
+          <div class="time-label">願景</div>
+          <article class="story-panel">
+            <span class="tag">現象級作品</span>
+            <p>蘇微希期待臺漫能出現一部足以撼動市場的作品，吸引資金流入，讓臺漫從政府補助走向成熟自主的生態鏈。這也是許多創作者共同的心聲：讓臺灣漫畫的場景更開闊。</p>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
 
-            // Determine Result Type
-            const resultTitle = document.getElementById('result-title');
-            const resultDesc = document.getElementById('result-desc');
-            const resultAdvice = document.getElementById('result-advice');
+  <footer class="footer">
+    <div class="site">
+      <p>互動新聞原型：多向文本敘事、漫畫分鏡視覺與原創同人創作模擬遊戲。可作為獨立 HTML 使用，或嵌入專題頁指定段落。</p>
+    </div>
+  </footer>
 
-            if (indiePercent >= 70) {
-                resultTitle.innerText = "⭐ 硬派原創同人魂";
-                resultDesc.innerHTML = "你完全無法忍受創作理念被干涉，你的作品充滿生命力且風格強烈！你選擇留在同人圈（如 Mangasick、台創祭），在那裡你面對的是自己的內心，而不是大數據決定的主流市場。";
-                resultAdvice.innerText = "獨立出版最大的挑戰是「經濟壓力」。建議可以嘗試申請政府補助，或尋求小眾粉絲的訂閱支持，將作品發展成獨特的 IP（如貓咪明信片等），在生存與自由間找到平衡。";
-            } else if (commPercent >= 70) {
-                resultTitle.innerText = "👑 商業連載超新星";
-                resultDesc.innerHTML = "你具備極佳的市場敏銳度，願意為了更廣大的讀者群調整內容。你懂得與「戰友（編輯）」合作，利用出版社的資源打磨分鏡與節奏，你的目標是成為下一個現象級臺漫！";
-                resultAdvice.innerText = "商業漫畫往往需要妥協，但在編輯的建議下，你的視覺引導與說故事技巧將會大幅進步。記得在迎合市場的糖衣中，依然要保留自己最想傳達的「關鍵核心」，才不會迷失自我。";
-            } else {
-                resultTitle.innerText = "⚖️ 兩棲跨界創作者";
-                resultDesc.innerHTML = "你選擇了「兩邊並行」的道路。在商業連載中獲取穩定收入與知名度，同時也持續在同人場擺攤，用同人誌來安放自己內心最純粹、最實驗性的創作能量。";
-                resultAdvice.innerText = "這是一條令人敬佩但極度勞累的路。商業創作是社會化的歷練，同人誌是藝術性的表達，兩者對你同等重要。請務必注意身體健康，避免在雙重截稿日中燃燒殆盡！";
-            }
-        }
-    </script>
+  <script>
+    const routeButtons = document.querySelectorAll(".route-btn");
+    const routeTargets = document.querySelectorAll("[data-route]:not(.route-btn)");
+
+    routeButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const route = button.dataset.route;
+        routeButtons.forEach((btn) => btn.classList.toggle("active", btn === button));
+        routeTargets.forEach((target) => {
+          const routes = (target.dataset.route || "").split(" ");
+          target.classList.toggle("route-match", routes.includes(route));
+        });
+      });
+    });
+
+    const questions = [
+      {
+        q: "你最想畫出哪一種作品核心？",
+        key: "content",
+        choices: [
+          { label: "末日裡仍想閃閃發光的人", note: "類型明確，有戲劇張力，也能保留個人情感。", free: 12, market: 20, risk: 4, text: "末日生存與情感成長" },
+          { label: "有點不舒服又有點好笑的日常", note: "聲音獨特，但市場分類較難。", free: 25, market: 6, risk: 15, text: "黑色幽默與不適感日常" },
+          { label: "替既有角色補上你想看的劇情", note: "熱情很強，但商業出版會遇到版權門檻。", free: 18, market: 2, risk: 28, text: "二創延伸故事" }
+        ]
+      },
+      {
+        q: "你希望作品採取什麼形式？",
+        key: "form",
+        choices: [
+          { label: "標準單行本，章回清楚", note: "方便編輯評估與通路銷售。", free: 5, market: 22, risk: 4, text: "章回式單行本" },
+          { label: "像手機介面的特殊裝訂", note: "體驗鮮明，適合同人場與展售現場介紹。", free: 22, market: 8, risk: 12, text: "特殊裝訂與互動閱讀" },
+          { label: "無對白、靠讀者自己解謎", note: "藝術性高，商業溝通成本也高。", free: 25, market: 5, risk: 14, text: "無對白實驗敘事" }
+        ]
+      },
+      {
+        q: "你最在意哪一種讀者關係？",
+        key: "reader",
+        choices: [
+          { label: "攤位前直接聊天，聽見各種解讀", note: "強化同人誌的近距離回饋。", free: 22, market: 8, risk: 5, text: "同人場近距離互動" },
+          { label: "書店、平台、海外代理都能看見", note: "需要更穩定的定位與包裝。", free: 6, market: 25, risk: 5, text: "通路與平台擴散" },
+          { label: "先累積小眾鐵粉，再慢慢擴散", note: "能守住作品調性，也保留成長空間。", free: 15, market: 15, risk: 6, text: "小眾社群經營" }
+        ]
+      },
+      {
+        q: "如果編輯建議你調整分鏡或尺度，你會？",
+        key: "editor",
+        choices: [
+          { label: "只保留最關鍵的幾格，其他願意調整", note: "像把個人美學和目標讀者重新對焦。", free: 8, market: 23, risk: 3, text: "可協商調整" },
+          { label: "這段就是作品核心，不能改", note: "適合先在同人誌完整呈現。", free: 25, market: 4, risk: 11, text: "堅持核心表達" },
+          { label: "把尖銳內容包進更好入口的糖衣", note: "兼顧辨識度與市場可讀性。", free: 14, market: 20, risk: 4, text: "糖衣包裝策略" }
+        ]
+      },
+      {
+        q: "你目前最需要什麼資源？",
+        key: "resource",
+        choices: [
+          { label: "穩定收入、行銷與通路", note: "商業出版能提供較完整支援。", free: 4, market: 26, risk: 5, text: "出版社資源" },
+          { label: "創作時間和不被打擾的自由", note: "獨立出版更能守住作品原貌，但生計壓力要另想辦法。", free: 25, market: 5, risk: 12, text: "創作自由與時間" },
+          { label: "補助、獎勵金和跨域媒合", note: "可作為同人到商業之間的過渡。", free: 12, market: 16, risk: 5, text: "補助與媒合" }
+        ]
+      }
+    ];
+
+    const state = {
+      index: 0,
+      free: 0,
+      market: 0,
+      risk: 0,
+      answers: {}
+    };
+
+    const stepLabel = document.getElementById("stepLabel");
+    const questionText = document.getElementById("questionText");
+    const choices = document.getElementById("choices");
+    const result = document.getElementById("result");
+    const freeScore = document.getElementById("freeScore");
+    const marketScore = document.getElementById("marketScore");
+    const riskScore = document.getElementById("riskScore");
+    const freeBar = document.getElementById("freeBar");
+    const marketBar = document.getElementById("marketBar");
+    const riskBar = document.getElementById("riskBar");
+
+    function updateMeters() {
+      freeScore.textContent = state.free;
+      marketScore.textContent = state.market;
+      riskScore.textContent = state.risk;
+      freeBar.style.width = Math.min(state.free, 100) + "%";
+      marketBar.style.width = Math.min(state.market, 100) + "%";
+      riskBar.style.width = Math.min(state.risk, 100) + "%";
+    }
+
+    function renderQuestion() {
+      result.classList.remove("show");
+      const item = questions[state.index];
+      stepLabel.textContent = `第 ${state.index + 1} 格 / ${questions.length}`;
+      questionText.textContent = item.q;
+      choices.innerHTML = "";
+      item.choices.forEach((choice) => {
+        const button = document.createElement("button");
+        button.className = "choice";
+        button.innerHTML = `<strong>${choice.label}</strong><small>${choice.note}</small>`;
+        button.addEventListener("click", () => choose(item.key, choice));
+        choices.appendChild(button);
+      });
+      updateMeters();
+    }
+
+    function choose(key, choice) {
+      state.free += choice.free;
+      state.market += choice.market;
+      state.risk += choice.risk;
+      state.answers[key] = choice.text;
+      state.index += 1;
+      updateMeters();
+      if (state.index >= questions.length) {
+        showResult();
+      } else {
+        renderQuestion();
+      }
+    }
+
+    function showResult() {
+      document.getElementById("stepLabel").textContent = "完稿";
+      questionText.textContent = "你的企劃草圖完成了。";
+      choices.innerHTML = "";
+
+      const title = document.getElementById("resultTitle");
+      const text = document.getElementById("resultText");
+      const advice = document.getElementById("resultAdvice");
+      const path = document.getElementById("pickedPath");
+      document.getElementById("pickedContent").textContent = state.answers.content || "未選擇";
+      document.getElementById("pickedForm").textContent = state.answers.form || "未選擇";
+
+      if (state.risk >= 55) {
+        title.textContent = "結果：先留在同人誌現場，避開商業出版風險";
+        text.textContent = "你的選擇有強烈個人慾望與實驗性，但也可能牽涉版權、尺度或分類困難。它很適合先在同人場、獨立書店或小眾社群中完整呈現。";
+        path.textContent = "獨立出版優先";
+        advice.textContent = "建議：保留尖銳的創作核心，透過攤位介紹、限量小誌、讀者投票或展覽式陳列，讓作品先找到理解它的人。";
+      } else if (state.market >= state.free + 18) {
+        title.textContent = "結果：具商業出版潛力，可以準備提案";
+        text.textContent = "你的作品題材清楚、形式易溝通，也願意與編輯協作。這類企劃比較容易被出版社、平台或補助審查理解。";
+        path.textContent = "商業出版可行";
+        advice.textContent = "建議：整理角色設定、前三回分鏡、目標讀者與市場定位。保留最有辨識度的畫面，讓編輯看見作品能被推廣的理由。";
+      } else if (state.free >= state.market + 18) {
+        title.textContent = "結果：同人誌會讓你的作品呼吸得更完整";
+        text.textContent = "你的選擇把自由表達放在首位，形式或題材都不急著向主流讀者靠攏。這不是不商業，而是目前更需要一個不被過早修剪的空間。";
+        path.textContent = "原創同人誌優先";
+        advice.textContent = "建議：以同人場測試讀者反應，累積作品集與社群；若未來想跨足商業，再選出能包裝、可連載、可推廣的部分。";
+      } else {
+        title.textContent = "結果：兩者並行，讓自由與市場互相校準";
+        text.textContent = "你的企劃同時有個人聲音與市場入口。它可以先用同人誌保存原味，再把可被更多讀者接住的段落發展成商業提案。";
+        path.textContent = "同人誌與商漫並行";
+        advice.textContent = "建議：把作品拆成兩條線，一條維持獨立出版的實驗版本，一條整理為商業可讀的連載版本，讓編輯協作成為放大器。";
+      }
+
+      result.classList.add("show");
+    }
+
+    document.getElementById("resetGame").addEventListener("click", () => {
+      state.index = 0;
+      state.free = 0;
+      state.market = 0;
+      state.risk = 0;
+      state.answers = {};
+      renderQuestion();
+    });
+
+    renderQuestion();
+  </script>
 </body>
 </html>
