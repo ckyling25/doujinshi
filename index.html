@@ -43,18 +43,18 @@
     }
 
     .hero {
-      min-height: 92vh;
+      min-height: auto;
       display: grid;
-      align-items: end;
+      align-items: start;
       padding: 28px 0 48px;
       position: relative;
     }
 
     .hero-grid {
       display: grid;
-      grid-template-columns: 1.05fr .95fr;
+      grid-template-columns: 1fr;
       gap: 24px;
-      align-items: end;
+      align-items: start;
     }
 
     .masthead {
@@ -62,7 +62,7 @@
       background: var(--panel);
       box-shadow: var(--shadow);
       padding: clamp(22px, 4vw, 46px);
-      transform: rotate(-1deg);
+      transform: none;
       position: relative;
     }
 
@@ -87,7 +87,7 @@
     h1 {
       font-size: clamp(2rem, 5.7vw, 5rem);
       margin-top: 22px;
-      max-width: 9.6em;
+      max-width: none;
     }
 
     .subtitle {
@@ -104,11 +104,10 @@
     }
 
     .cover-comic {
-      min-height: 530px;
+      min-height: 330px;
       display: grid;
       gap: 16px;
-      grid-template-columns: 1fr 1fr;
-      grid-template-rows: 1.08fr .92fr;
+      grid-template-columns: 1.35fr 1fr 1fr;
     }
 
     .cover-panel {
@@ -121,7 +120,6 @@
     }
 
     .cover-panel:nth-child(1) {
-      grid-column: span 2;
       background:
         radial-gradient(circle at 70% 35%, rgba(255,255,255,.9) 0 16%, transparent 17%),
         radial-gradient(circle at 64% 42%, var(--yellow) 0 3px, transparent 4px),
@@ -371,6 +369,17 @@
       font-size: clamp(1.55rem, 3vw, 2.4rem);
       background: linear-gradient(transparent 62%, var(--yellow) 63%);
       width: fit-content;
+    }
+
+    .article-copy-box {
+      border: 4px solid var(--ink);
+      background: #fff;
+      box-shadow: 5px 5px 0 var(--ink);
+      padding: clamp(18px, 3vw, 28px);
+      margin: 0 0 22px;
+      min-height: 150px;
+      font-weight: 800;
+      font-size: 1.08rem;
     }
 
     .panel-grid {
@@ -648,6 +657,7 @@
 
       .cover-comic {
         min-height: 440px;
+        grid-template-columns: 1fr;
       }
 
       .score-board {
@@ -742,6 +752,7 @@
         <div class="issue-no">01</div>
         <h2>疫情後的豪賭　原創成為敲門磚</h2>
       </div>
+      <div class="article-copy-box">【這裡放入新聞段落內容】</div>
       <div class="panel-grid">
         <article class="story-panel span-7" data-route="commerce freedom">
           <span class="tag">卓芭子</span>
@@ -764,6 +775,7 @@
         <div class="issue-no">02</div>
         <h2>同人誌呈現多樣面貌　培育臺漫新生力量</h2>
       </div>
+      <div class="article-copy-box">【這裡放入新聞段落內容】</div>
       <div class="panel-grid">
         <article class="story-panel span-6" data-route="freedom">
           <span class="tag">商漫與同人誌</span>
@@ -789,6 +801,7 @@
         <div class="issue-no">03</div>
         <h2>創作跳脫主流框架　自由特性成首要考量</h2>
       </div>
+      <div class="article-copy-box">【這裡放入新聞段落內容】</div>
 
       <section class="game" aria-labelledby="game-title">
         <div class="game-head">
@@ -871,6 +884,7 @@
         <div class="issue-no">04</div>
         <h2>從個人跨足商漫市場　編輯成作品平衡關鍵</h2>
       </div>
+      <div class="article-copy-box">【這裡放入新聞段落內容】</div>
       <div class="panel-grid">
         <article class="story-panel span-5" data-route="commerce">
           <span class="tag">為何跨足</span>
@@ -896,6 +910,7 @@
         <div class="issue-no">05</div>
         <h2>偏見、生計與九十公分寬的讀者距離</h2>
       </div>
+      <div class="article-copy-box">【這裡放入新聞段落內容】</div>
       <div class="panel-grid">
         <article class="story-panel span-6" data-route="stigma">
           <span class="tag">生活壓力</span>
@@ -918,6 +933,7 @@
         <div class="issue-no">06</div>
         <h2>盼消弭既定印象　臺漫亟待破圈時機</h2>
       </div>
+      <div class="article-copy-box">【這裡放入新聞段落內容】</div>
       <div class="timeline">
         <div class="timeline-item" data-route="future">
           <div class="time-label">現在</div>
