@@ -58,10 +58,10 @@
     }
 
     .masthead {
-      border: 4px solid var(--ink);
-      background: var(--panel);
-      box-shadow: var(--shadow);
-      padding: clamp(22px, 4vw, 46px);
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+      padding: 10px 0 0;
       transform: none;
       position: relative;
     }
@@ -372,14 +372,23 @@
     }
 
     .article-copy-box {
-      border: 4px solid var(--ink);
-      background: #fff;
-      box-shadow: 5px 5px 0 var(--ink);
-      padding: clamp(18px, 3vw, 28px);
-      margin: 0 0 22px;
-      min-height: 150px;
-      font-weight: 800;
+      border-top: 3px solid var(--ink);
+      border-bottom: 3px solid var(--ink);
+      background: transparent;
+      box-shadow: none;
+      padding: clamp(22px, 3vw, 34px) 0;
+      margin: 0 0 28px;
+      min-height: auto;
+      font-weight: 400;
       font-size: 1.08rem;
+    }
+
+    .article-copy-box p {
+      margin: 0 0 1.1em;
+    }
+
+    .article-copy-box p:last-child {
+      margin-bottom: 0;
     }
 
     .panel-grid {
@@ -748,10 +757,6 @@
     </section>
 
     <section class="section" id="start">
-      <div class="section-title">
-        <div class="issue-no">01</div>
-        <h2>123</h2>
-      </div>
       <div class="article-copy-box">
        <p>「覺得自己第一次跟電影中的那種末日情境這麼靠近。」原本是代課老師的漫畫家
          卓芭子，在疫情期間面臨職涯轉變，「那時候只能在家線上上課，家人就希望我換一個正式的工作。」</p>
@@ -781,7 +786,7 @@
 
     <section class="section" id="newcomer">
       <div class="section-title">
-        <div class="issue-no">02</div>
+        <div class="issue-no">01</div>
         <h2>同人誌呈現多樣面貌　培育臺漫新生力量</h2>
       </div>
       <div class="article-copy-box"> 
@@ -818,7 +823,7 @@
 
     <section class="section" id="freedom">
       <div class="section-title">
-        <div class="issue-no">03</div>
+        <div class="issue-no">02</div>
         <h2>創作跳脫主流框架　自由特性成首要考量</h2>
       </div>
       <div class="article-copy-box">
@@ -918,7 +923,7 @@
 
     <section class="section" id="commerce">
       <div class="section-title">
-        <div class="issue-no">04</div>
+        <div class="issue-no">03</div>
         <h2>從個人跨足商漫市場　編輯成作品平衡關鍵</h2>
       </div>
       <div class="article-copy-box">
@@ -968,11 +973,6 @@
     </section>
 
     <section class="section" id="stigma">
-      <div class="section-title">
-        <div class="issue-no">05</div>
-        <h2>偏見、生計與九十公分寬的讀者距離</h2>
-      </div>
-      <div class="article-copy-box">【這裡放入新聞段落內容】</div>
       <div class="panel-grid">
         <article class="story-panel span-6" data-route="stigma">
           <span class="tag">生活壓力</span>
@@ -992,7 +992,7 @@
 
     <section class="section" id="future">
       <div class="section-title">
-        <div class="issue-no">06</div>
+        <div class="issue-no">04</div>
         <h2>盼消弭既定印象　臺漫亟待破圈時機</h2>
       </div>
       <div class="article-copy-box">
