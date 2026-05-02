@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>臺漫創作者生存模擬器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            /* 漫畫網點背景 */
+            background-color: #f4f4f0;
+            background-image: radial-gradient(#d1d1c7 2px, transparent 2px);
+            background-size: 16px 16px;
+            color: #1a1a1a;
+            overflow-x: hidden;
+        }
+
+        /* 漫畫分鏡格風格 */
+        .comic-panel {
+            background-color: white;
+            border: 4px solid #1a1a1a;
+            border-radius: 8px;
+            box-shadow: 8px 8px 0px #1a1a1a;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+        }
+
+        .comic-panel:hover.interactive {
+            transform: translate(-2px, -2px);
+            box-shadow: 10px 10px 0px #1a1a1a;
+            cursor: pointer;
+        }
+
+        .comic-panel:active.interactive {
+            transform: translate(4px, 4px);
+            box-shadow: 2px 2px 0px #1a1a1a;
+        }
+
+        /* 漫畫對話框 */
+        .speech-bubble {
+            position: relative;
+            background: white;
+            border: 4px solid #1a1a1a;
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 4px 4px 0px #1a1a1a;
+        }
+
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 50px;
+            border-width: 20px 20px 0 0;
+            border-style: solid;
+            border-color: #1a1a1a transparent transparent transparent;
+        }
+
+        .speech-bubble::before {
+            content: '';
+            position: absolute;
+            bottom: -13px;
+            left: 53px;
+            border-width: 15px 15px 0 0;
+            border-style: solid;
+            border-color: white transparent transparent transparent;
+            z-index: 1;
+        }
+
+        /* 集中線特效 */
+        .action-lines {
+            background: repeating-conic-gradient(
+                from 0deg,
+                transparent 0deg 15deg,
+                rgba(0, 0, 0, 0.05) 15deg 30deg
+            );
+        }
+
+        /* 標題字體特效 */
+        .comic-title {
+            text-shadow: 3px 3px 0px #fff, 6px 6px 0px #1a1a1a;
+            font-weight: 900;
+            letter-spacing: 2px;
+        }
+
+        .hidden-screen {
+            display: none;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div id="game-container" class="w-full max-w-2xl mx-auto">
+        
+        <!-- ================= START SCREEN ================= -->
+        <div id="start-screen" class="comic-panel action-lines p-8 text-center fade-in">
+            <div class="mb-6 flex justify-center">
+                <!-- SVG Icon -->
+                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-600"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></svg>
+            </div>
+            <h1 class="text-4xl md:text-5xl comic-title text-indigo-600 mb-4">臺漫創作者生存模擬器</h1>
+            <p class="text-lg font-bold mb-8 bg-white inline-block px-4 py-2 border-2 border-black rounded-lg transform -rotate-2">
+                「畫到底，能當飯吃嗎？」
+            </p>
+            <p class="text-gray-700 mb-8 font-medium">
+                你是一位剛踏入社會的創作者，腦中有著滿滿的故事。<br>
+                面對現實的經濟壓力與商業市場的考驗，<br>
+                你的選擇會帶你走向商業連載，還是獨立出版的同人場？
+            </p>
+            <button onclick="startGame()" class="comic-panel interactive w-full py-4 bg-yellow-400 text-xl font-bold uppercase tracking-widest hover:bg-yellow-300">
+                開始連載！ (START)
+            </button>
+        </div>
+
+        <!-- ================= GAME SCREEN ================= -->
+        <div id="game-screen" class="hidden-screen fade-in">
+            <div class="flex justify-between items-center mb-4 font-bold border-b-4 border-black pb-2">
+                <span class="text-xl">EPISODE <span id="ep-number">1</span></span>
+                <span class="bg-black text-white px-3 py-1 rounded-full text-sm">抉擇時刻</span>
+            </div>
+
+            <!-- Dialogue / Question -->
+            <div class="speech-bubble">
+                <p id="question-text" class="text-xl font-bold leading-relaxed"></p>
+            </div>
+
+            <!-- Choices -->
+            <div id="choices-container" class="grid grid-cols-1 gap-4">
+                <!-- Buttons will be injected here via JS -->
+            </div>
+        </div>
+
+        <!-- ================= RESULT SCREEN ================= -->
+        <div id="result-screen" class="hidden-screen comic-panel p-8 fade-in">
+            <h2 class="text-3xl comic-title text-red-500 mb-6 text-center">最終完結篇</h2>
+            
+            <div class="mb-8 border-4 border-black p-4 rounded-lg bg-gray-50 relative overflow-hidden">
+                <div class="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+PHBhdGggZD0iTTAgMGgyMHYyMEgwem0xMCAxMGgxMHYxMEgxMHoiIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iLjEiLz48L3N2Zz4=')]"></div>
+                <h3 class="text-xl font-bold mb-2">你的創作者屬性分析：</h3>
+                
+                <div class="mb-2 flex justify-between font-bold text-sm">
+                    <span>獨立出版 (同人)</span>
+                    <span>商業出版 (主流)</span>
+                </div>
+                <!-- Progress Bar -->
+                <div class="w-full bg-gray-300 h-6 rounded-full border-2 border-black overflow-hidden flex">
+                    <div id="indie-bar" class="bg-blue-400 h-full border-r-2 border-black flex items-center justify-center text-xs font-bold transition-all duration-1000" style="width: 50%"></div>
+                    <div id="commercial-bar" class="bg-yellow-400 h-full flex items-center justify-center text-xs font-bold transition-all duration-1000" style="width: 50%"></div>
+                </div>
+            </div>
+
+            <div class="text-center mb-8">
+                <h3 id="result-title" class="text-2xl font-bold bg-black text-white inline-block px-4 py-2 transform -skew-x-6 mb-4"></h3>
+                <p id="result-desc" class="text-lg leading-relaxed text-left"></p>
+            </div>
+
+            <div class="bg-yellow-100 border-l-8 border-yellow-500 p-4 mb-6">
+                <h4 class="font-bold flex items-center mb-2">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    編輯部給你的生存建議：
+                </h4>
+                <p id="result-advice" class="text-sm font-medium"></p>
+            </div>
+
+            <button onclick="location.reload()" class="comic-panel interactive w-full py-3 bg-white text-lg font-bold">
+                重新模擬一次 (RESTART)
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        // Game Data & Logic
+        const storyData = [
+            {
+                text: "恭喜畢業！你決定踏上漫畫家之路。但現實是殘酷的，存款所剩無幾，你的第一步是？",
+                choices: [
+                    { 
+                        text: "燃燒熱血！辭掉工作全職投入原創同人誌創作，窮也要畫！", 
+                        indieVal: 3, commVal: 0, 
+                        icon: "🔥"
+                    },
+                    { 
+                        text: "先找份正職或接案維持生計，利用下班時間慢慢畫", 
+                        indieVal: 1, commVal: 2, 
+                        icon: "💼"
+                    }
+                ]
+            },
+            {
+                text: "終於要構思第一部作品了！你想畫什麼樣的故事？",
+                choices: [
+                    { 
+                        text: "迎合大眾口味的王道熱血戰鬥，或是校園戀愛喜劇", 
+                        indieVal: 0, commVal: 3, 
+                        icon: "⚔️"
+                    },
+                    { 
+                        text: "探討社會邊緣議題，帶點獵奇或讓人不舒服的實驗性作品", 
+                        indieVal: 3, commVal: 0, 
+                        icon: "👁️"
+                    },
+                    { 
+                        text: "單純記錄自家貓咪的日常，療癒輕鬆的小短漫", 
+                        indieVal: 2, commVal: 1, 
+                        icon: "🐈"
+                    }
+                ]
+            },
+            {
+                text: "你的作品在網路上獲得了一些關注，某天，一位商業出版社的編輯私訊你，希望能洽談連載，但要求你修改主角的設定以符合「普遍級」市場（例如：把抽菸改成吃棒棒糖）。你決定？",
+                choices: [
+                    { 
+                        text: "接受修改！這是踏入商業市場、獲得資源與行銷的大好機會！", 
+                        indieVal: -1, commVal: 4, 
+                        icon: "🤝"
+                    },
+                    { 
+                        text: "拒絕妥協！我的角色就是要在這時候抽菸才有靈魂！我選擇獨立出版。", 
+                        indieVal: 4, commVal: -1, 
+                        icon: "🚭"
+                    },
+                    { 
+                        text: "嘗試溝通：砍掉大量抽菸鏡頭，但保留最關鍵的一格以傳達美學。", 
+                        indieVal: 2, commVal: 3, 
+                        icon: "⚖️"
+                    }
+                ]
+            },
+            {
+                text: "作品即將印製成實體書，但獨立印刷成本很高，你的選擇是？",
+                choices: [
+                    { 
+                        text: "申請文化部/文策院的漫畫輔導金，賭一把全心投入創作", 
+                        indieVal: 3, commVal: 1, 
+                        icon: "📜"
+                    },
+                    { 
+                        text: "不印了，直接交給出版社，靠版稅和平台點擊率賺錢", 
+                        indieVal: 0, commVal: 3, 
+                        icon: "🏢"
+                    },
+                    { 
+                        text: "在募資平台上發起集資，直接面對讀者測試市場水溫", 
+                        indieVal: 2, commVal: 2, 
+                        icon: "💰"
+                    }
+                ]
+            },
+            {
+                text: "最後，你覺得畫漫畫對你來說，最重要的是什麼？",
+                choices: [
+                    { 
+                        text: "毫無隔閡地與讀者互動，完整傳達自己的聲音", 
+                        indieVal: 3, commVal: 0, 
+                        icon: "🗣️"
+                    },
+                    { 
+                        text: "成為現象級作品，讓作品出現在各大書店甚至被影視化", 
+                        indieVal: 0, commVal: 3, 
+                        icon: "🎬"
+                    }
+                ]
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let scoreIndie = 0;
+        let scoreComm = 0;
+
+        // Elements
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const epNumber = document.getElementById('ep-number');
+        const questionText = document.getElementById('question-text');
+        const choicesContainer = document.getElementById('choices-container');
+
+        function startGame() {
+            startScreen.classList.add('hidden-screen');
+            gameScreen.classList.remove('hidden-screen');
+            currentQuestionIndex = 0;
+            scoreIndie = 0;
+            scoreComm = 0;
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            // Add slight animation
+            gameScreen.classList.remove('fade-in');
+            void gameScreen.offsetWidth; // trigger reflow
+            gameScreen.classList.add('fade-in');
+
+            const currentData = storyData[currentQuestionIndex];
+            epNumber.innerText = currentQuestionIndex + 1;
+            questionText.innerText = currentData.text;
+            
+            // Clear choices
+            choicesContainer.innerHTML = '';
+
+            // Render choices
+            currentData.choices.forEach((choice, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'comic-panel interactive w-full text-left p-4 flex items-start bg-white hover:bg-gray-50';
+                btn.innerHTML = `
+                    <span class="text-3xl mr-4">${choice.icon}</span>
+                    <span class="text-lg font-bold">${choice.text}</span>
+                `;
+                btn.onclick = () => handleChoice(choice.indieVal, choice.commVal);
+                choicesContainer.appendChild(btn);
+            });
+        }
+
+        function handleChoice(iVal, cVal) {
+            scoreIndie += iVal;
+            scoreComm += cVal;
+
+            currentQuestionIndex++;
+            if (currentQuestionIndex < storyData.length) {
+                renderQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            gameScreen.classList.add('hidden-screen');
+            resultScreen.classList.remove('hidden-screen');
+
+            // Calculate percentage
+            const total = Math.max(scoreIndie + scoreComm, 1); // prevent div by zero
+            // Normalize scores to avoid negative visual bars if any
+            const safeIndie = Math.max(scoreIndie, 0);
+            const safeComm = Math.max(scoreComm, 0);
+            const safeTotal = safeIndie + safeComm;
+            
+            const indiePercent = Math.round((safeIndie / safeTotal) * 100);
+            const commPercent = 100 - indiePercent;
+
+            // Animate bars
+            document.getElementById('indie-bar').style.width = `${indiePercent}%`;
+            document.getElementById('indie-bar').innerText = `${indiePercent}%`;
+            document.getElementById('commercial-bar').style.width = `${commPercent}%`;
+            document.getElementById('commercial-bar').innerText = `${commPercent}%`;
+
+            // Determine Result Type
+            const resultTitle = document.getElementById('result-title');
+            const resultDesc = document.getElementById('result-desc');
+            const resultAdvice = document.getElementById('result-advice');
+
+            if (indiePercent >= 70) {
+                resultTitle.innerText = "⭐ 硬派原創同人魂";
+                resultDesc.innerHTML = "你完全無法忍受創作理念被干涉，你的作品充滿生命力且風格強烈！你選擇留在同人圈（如 Mangasick、台創祭），在那裡你面對的是自己的內心，而不是大數據決定的主流市場。";
+                resultAdvice.innerText = "獨立出版最大的挑戰是「經濟壓力」。建議可以嘗試申請政府補助，或尋求小眾粉絲的訂閱支持，將作品發展成獨特的 IP（如貓咪明信片等），在生存與自由間找到平衡。";
+            } else if (commPercent >= 70) {
+                resultTitle.innerText = "👑 商業連載超新星";
+                resultDesc.innerHTML = "你具備極佳的市場敏銳度，願意為了更廣大的讀者群調整內容。你懂得與「戰友（編輯）」合作，利用出版社的資源打磨分鏡與節奏，你的目標是成為下一個現象級臺漫！";
+                resultAdvice.innerText = "商業漫畫往往需要妥協，但在編輯的建議下，你的視覺引導與說故事技巧將會大幅進步。記得在迎合市場的糖衣中，依然要保留自己最想傳達的「關鍵核心」，才不會迷失自我。";
+            } else {
+                resultTitle.innerText = "⚖️ 兩棲跨界創作者";
+                resultDesc.innerHTML = "你選擇了「兩邊並行」的道路。在商業連載中獲取穩定收入與知名度，同時也持續在同人場擺攤，用同人誌來安放自己內心最純粹、最實驗性的創作能量。";
+                resultAdvice.innerText = "這是一條令人敬佩但極度勞累的路。商業創作是社會化的歷練，同人誌是藝術性的表達，兩者對你同等重要。請務必注意身體健康，避免在雙重截稿日中燃燒殆盡！";
+            }
+        }
+    </script>
+</body>
+</html>
