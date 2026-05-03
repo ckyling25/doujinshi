@@ -824,6 +824,18 @@
       .dnd-zones { grid-template-columns: 1fr; }
       }
     }
+
+    .fade-up {
+      opacity: 0;
+      transform: translateY(40px); /* 初始位置往下偏移 40px */
+      transition: opacity 0.8s ease-out, transform 0.8s ease-out; /* 動畫持續 0.8 秒 */
+      will-change: opacity, transform;
+    }
+
+    .fade-up.visible {
+      opacity: 1;
+      transform: translateY(0); /* 回到原本位置 */
+    }
   </style>
 </head>
 <body>
@@ -911,7 +923,7 @@
       </div>
     </section>
 
-    <section class="section" id="newcomer">
+    <section class="section fade-up" id="newcomer">
       <div class="section-title">
         <div class="issue-no">01</div>
         <h2>同人誌呈現多樣面貌　培育臺漫新生力量</h2>
@@ -955,7 +967,7 @@
         </div>
     </section>
 
-    <section class="section" id="freedom">
+    <section class="section fade-up" id="freedom">
       <div class="section-title">
         <div class="issue-no">02</div>
         <h2>創作跳脫主流框架　自由特性成首要考量</h2>
@@ -1023,30 +1035,9 @@
           <button class="reset-btn" id="resetGame">重新畫一回</button>
         </div>
       </section>
-
-      <div class="panel-grid">
-        <article class="story-panel span-6" data-route="freedom">
-          <span class="tag">cc作務</span>
-          <p class="quote">「獨立出版很吸引我的是，他們想要把事情用漫畫講出來的那種生命力。」</p>
-          <p>他在 Mangasick 接觸到不同於主流商漫的作品，意識到畫得好不好不是唯一標準，創作者有沒有透過作品傳達自己的聲音，反而更重要。</p>
-        </article>
-        <article class="story-panel span-6" data-route="freedom commerce">
-          <span class="tag">伯爵 C's</span>
-          <p>伯爵 C's 取材日常生活，推出《Miranda and Lisa》和《JELDA》，也曾因貓角色吸引愛好者而思考 IP 化經營。但他並不急著進入商業市場，因為同人誌與商業漫畫的差別，是創作者面對的是市場還是自己。</p>
-        </article>
-        <article class="story-panel span-5" data-route="freedom">
-          <span class="tag">刺球外圍</span>
-          <p>蕭怡瑩以刺球比喻商業漫畫市場：中心是大數據決定的主流選擇，外圍的尖刺則是同人誌。被排擠掉的創意、尖銳議題，能在同人誌市場生存。</p>
-        </article>
-        <article class="story-panel span-7" data-route="freedom stigma">
-          <span class="tag">蛤仔</span>
-          <p class="quote">「我喜歡以一種看的人會覺得有點不舒服，但是繼續看又會覺得有點好笑的方式繪畫。」</p>
-          <p>這種遊走於不適與幽默之間的風格，與商業市場偏好有所落差，也讓他難以在出版體系找到對應位置。</p>
-        </article>
-      </div>
     </section>
 
-    <section class="section" id="commerce">
+    <section class="section fade-up" id="commerce">
       <div class="section-title">
         <div class="issue-no">03</div>
         <h2>從個人跨足商漫市場　編輯成作品平衡關鍵</h2>
@@ -1080,25 +1071,7 @@
       </div>
     </section>
 
-    <section class="section" id="stigma">
-      <div class="panel-grid">
-        <article class="story-panel span-6" data-route="stigma">
-          <span class="tag">生活壓力</span>
-          <p>蛤仔直言，一邊打工會很累，很難專心畫圖。即使獲得獎勵金，許多創作者仍需接案或兼職支撐生活，這也是部分原創同人漫畫家轉向商業市場的原因。</p>
-        </article>
-        <article class="story-panel span-6" data-route="stigma">
-          <span class="tag">社會誤解</span>
-          <p>同人誌創作者常面臨外界誤解，被追問是否畫成人內容，或被視為不正式的工作。商業漫畫家被看作有專業背書，同人誌則常被歸為業餘嗜好。</p>
-        </article>
-        <article class="story-panel span-12" data-route="freedom future">
-          <span class="tag">近距離回饋</span>
-          <p class="quote">「他們跟讀者之間只隔著九十公分寬的桌子。」</p>
-          <p>同人誌的不可取代性，也在於創作者能直接聽到讀者如何理解作品。對白少、設計不直觀的書，都能在攤位前透過對話被重新打開。</p>
-        </article>
-      </div>
-    </section>
-
-    <section class="section" id="future">
+    <section class="section fade-up" id="future">
       <div class="section-title">
         <div class="issue-no">04</div>
         <h2>盼消弭既定印象　臺漫亟待破圈時機</h2>
@@ -1432,6 +1405,27 @@
         checkBtn.textContent = "重新開始 (Restart)";
         checkBtn.style.background = "#fff";
       }
+    });
+
+    const fadeUpElements = document.querySelectorAll('.fade-up');
+
+    const observerOptions = {
+      root: null,      // 預設為瀏覽器視窗
+      rootMargin: '0px',
+      threshold: 0.15  // 當元素 15% 進入畫面時觸發動畫
+    };
+
+    const observer = new IntersectionObserver((entries, observer) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible'); // 加上 visible class 來觸發 CSS 動畫
+          observer.unobserve(entry.target);      // 觸發後就取消觀察，讓動畫只跑一次
+        }
+      });
+    }, observerOptions);
+
+    fadeUpElements.forEach(el => {
+      observer.observe(el); // 開始觀察每一個帶有 fade-up 的元素
     });
   </script>
 </body>
