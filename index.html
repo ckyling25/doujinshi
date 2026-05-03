@@ -1427,6 +1427,19 @@
     fadeUpElements.forEach(el => {
       observer.observe(el); // 開始觀察每一個帶有 fade-up 的元素
     });
+
+    // 關閉瀏覽器預設的「記住滾動位置」功能
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+    
+    // 強制將滾動條移回最左上角
+    window.scrollTo(0, 0);
+
+    // 如果網址列有錨點（例如網址最後有 #future），把它清除，避免瀏覽器自動跳轉
+    if (window.location.hash) {
+      window.history.replaceState(null, null, window.location.pathname + window.location.search);
+    }
   </script>
 </body>
 </html>
