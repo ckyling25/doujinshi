@@ -1368,7 +1368,25 @@
       });
     });
 
-    document.getElementById("check-answers-btn").addEventListener("click", () => {
+    const checkBtn = document.getElementById("check-answers-btn");
+    const dndPool = document.getElementById("dnd-pool");
+    
+    checkBtn.addEventListener("click", () => {
+      // 判斷當前按鈕狀態是不是「重新開始」
+      if (checkBtn.textContent === "重新開始 (Restart)") {
+        // 執行重置動作
+        items.forEach(item => {
+          item.classList.remove("correct", "wrong", "selected");
+          dndPool.appendChild(item); // 把所有選項移回上方待選項區
+        });
+        const resBoxDnD = document.getElementById("dnd-result");
+        resBoxDnD.style.display = "none"; // 隱藏結果提示框
+        checkBtn.textContent = "完成配對 (Check Answers)"; // 按鈕文字改回
+        checkBtn.style.background = "var(--yellow)"; // 按鈕顏色改回
+        return; // 重置完成，結束這個函數
+      }
+
+      // 以下是原本的檢查答案邏輯
       let allCorrect = true;
       let totalPlaced = 0;
 
@@ -1398,14 +1416,21 @@
         resBoxDnD.style.background = "var(--paper-2)";
         resBoxDnD.style.color = "var(--ink)";
         resBoxDnD.innerHTML = "👀 還有項目沒有配對完喔！請將所有特徵分類完畢。";
+        // 沒放完不改變按鈕狀態，讓玩家繼續放
       } else if (allCorrect) {
         resBoxDnD.style.background = "var(--green)";
         resBoxDnD.style.color = "#fff";
         resBoxDnD.innerHTML = "🎉 太棒了！你完全掌握了商漫與同人誌的生態差異！";
+        // 全對，按鈕變成重新開始
+        checkBtn.textContent = "重新開始 (Restart)";
+        checkBtn.style.background = "#fff"; 
       } else {
         resBoxDnD.style.background = "var(--red)";
         resBoxDnD.style.color = "#fff";
-        resBoxDnD.innerHTML = "🤔 有些配對似乎不太對（標示為紅色的選項），再試著移動看看吧！";
+        resBoxDnD.innerHTML = "🤔 有些配對似乎不太對（標示為紅色的選項）。";
+        // 有錯，按鈕變成重新開始
+        checkBtn.textContent = "重新開始 (Restart)";
+        checkBtn.style.background = "#fff";
       }
     });
   </script>
